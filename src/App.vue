@@ -1,97 +1,101 @@
-<script src="https://www.promisejs.org/polyfills/promise-7.0.4.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 
 <template>
-  <div class="DrawPage">
-      <p>{{message}}</p>
-      <li v-for="item in search_results_name" :key="item">{{ item }}</li>
-      <canvas id="canvas" :height="canvas_height" :width="canvas_width" ></canvas>
-  </div>
+ <div id="app">   
+     <h1>チェックボックス12</h1>
+    
+        <h5>あなたの持っている技術は何ですか？</h5>
+        <li v-for="tech in technologies" :key="tech">
+        <input type="checkbox" :value="tech.id" v-model="selectedTechIds" @change="onChangeTech">
+            <span v-text="tech.name"></span>
+            &nbsp;
+        </li>
+        <h5>あなたが知りたいものは何ですか？</h5>
+        <li v-for="want in filteredWants" :key="want">
+            <input type="checkbox" :value="want.id" v-model="selectedWantIds">
+            <span v-text="want.name"></span>
+            &nbsp;&nbsp;
+        </li>
+        <hr>
+        <div>
+            <h5>【選択された値】</h5>
+            持っている技術: <strong v-text="selectedTechIds"></strong><br>
+            やりたい技術: <strong v-text="selectedWantIds"></strong>
+        </div>
+    </div>
 </template>
 
+    
 
-<script>
-import DrawPageVue from './components/DrawPage.vue';
-class Vector2{
-    constructor(x = 0, y = 0){
-        this.x = x;
-        this.y = y;
-    }
-}
 
-export default {
-    name: 'DrawPage',
-    data(){
-        return{
-            message : 'Draw!!',
-            num : 1,
-            canvas_height:1024,
-            canvas_width:1024,
-            search_results_name:[], // 検索元の単語
-            search_results_volume:[20,20,20,20,20], // 検索結果の件数
-            circle:[],
-        }
-    },
+    <script>
 
-    methods: {
-            getdata:  async function(){
-              // jsonファイルはpublicの下
-                const response =  await axios.get('./sample.json')
-                const gengo_id = response.data.gengo_id
-                const gengo = ["C", "python", "Ruby"];
-                const gengo1 = gengo[gengo_id[0].id];
-                const gengo2 = gengo[gengo_id[1].id];
-                console.log(gengo1);
-                this.search_results_name.push(...[gengo1, gengo2]);
+        export default({
+            data() {
+                return{
+                      technologies: [],
+                wants: [],
+                selectedTechIds: [],
+                selectedWantIds: []
             }
-        },
+            },
+            methods: {
+                onChangeTech() {
 
+                    this.selectedWantIds = [];
 
-    mounted : function(){
-        // 起動--wait-->描画とすると上手くいく
-        setTimeout(() => {
-            var center = new Vector2(this.canvas_width * 0.5, this.canvas_height * 0.5)
-            var center_r = center.x * 0.25;
-            var sum_volume = this.search_results_volume
-                .reduce(function(sum, element){
-                    return sum + element;
-                }, 0);
+                    if(!this.selectedTechIds) {
 
-            var canvas = document.getElementById('canvas');
-            var c = canvas.getContext('2d');
+                        this.selectedTechIds = [];
 
-            var sum_rad = 0;
-            //getdata関数
-            this.getdata();
-            console.log(this.search_results_name);
-            
-            for(let i = 0; i < this.search_results_volume.length; i++){
-                var rate = this.search_results_volume[i] / sum_volume;
-                var rad = Math.PI * rate;
+                    }
+                }
+                
+            },
+            computed: {
+                filteredWants() {
 
-                c.fillStyle = "rgba(" + [0, 255, 0, 0.25] + ")";
-                // パスの開始
-                c.beginPath();
-                c.arc(
-                    center.x + Math.sin(sum_rad + rad) * center_r,
-                    center.y + Math.cos(sum_rad + rad) * center_r,
-                    center_r * rad, 0, 2 * Math.PI, false);
-                // 描画
-                c.fill();
+                    let filteredWants = [];
 
-                sum_rad += 2 * rad;
+                    for(let i = 0 ; i < this.wants.length ; i++) {
+
+                        let want = this.wants[i];
+
+                        if(this.selectedTechIds.includes(want.techId)) {
+
+                            let tech = this.technologies.find((tech) => {
+
+                                return (tech.id );
+
+                            });
+
+                            filteredWants.push({
+                                id: want.id,
+                                name: want.name
+                            });
+
+                        }
+
+                    }
+
+                    return filteredWants;
+
+                }
+            },
+            mounted() {
+
+                axios.get('/text.json')
+                    .then((response) => {
+
+                        this.technologies = response.data.technologies;
+                        this.wants = response.data.wants;
+
+                    });
+                        // POST
+             
+                
             }
-        }, 10);
-    },
-}
-
-</script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
- canvas {
-        border: 1px solid silver;
-        width: 50%;
-    }
-</style>
+        });
+    </script>
