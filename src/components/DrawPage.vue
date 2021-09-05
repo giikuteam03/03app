@@ -19,18 +19,13 @@ class Vector2{
     }
 }
 
-class Info{
-    constructor(){
-        this.name;
-    }
-}
-
 class Circle{
     constructor(x, y, r) {
-      this.postion = new Vector2(x,y);
-      this.r = r;
-      this.color = '#ff000000';
-      this.Info = new Info();
+        this.postion = new Vector2(x,y);
+        this.r = r;
+        this.color = '#ff000000';
+        this.name = "noname";
+        this.show = true;
     }
 
     setColor(a, r, g, b){
@@ -69,71 +64,69 @@ export default {
             num : 1,
             canvas_width:990,
             canvas_height:540,
+            render_context:null,
+            buffer_context:null,
             select_circles:[],
             search_circles:[],
             center_cricle:null,
         }
     },
     mounted : function(){
-        this.canvas = document.getElementById('canvas');
-        let ctx = this.canvas.getContext('2d');
-
-        const center = new Vector2(this.canvas_width * 0.5, this.canvas_height * 0.5)
-        const center_r = center.y * 0.3;
-
-        this.center_cricle = new Circle(center.x, center.y, center_r * 1.8);
-        this.center_cricle.setColor(0.10, 0, 0, 0);
-
-        var sum_volume = this.select_volumes
-            .reduce(function(sum, element){
-                return sum + element;
-            }, 0);
-        var sum_rad = 0;
-        for(let i = 0; i < this.select_volumes.length; i++){
-            let rate = this.select_volumes[i] / sum_volume;
-            let rad = Math.PI * rate;
-            let circle = new Circle(
-                center.x + Math.sin(sum_rad + rad) * center_r,
-                center.y + Math.cos(sum_rad + rad) * -center_r,
-                center_r * rad);
-            circle.setColor(0.25, 0, 255, 0);
-            circle.Info.name = this.select_names[i];
-            this.select_circles.push(circle);
-            sum_rad += 2 * rad;
-        }
-
-        sum_volume = this.search_results_volumes
-            .reduce(function(sum, element){
-                return sum + element;
-            }, 0);
-        sum_rad = 0;
-        for(let i = 0; i < this.search_results_volumes.length; i++){
-            let rate = this.search_results_volumes[i] / sum_volume;
-            let rad = Math.PI * rate;
-            let circle = new Circle(
-                center.x + Math.sin(sum_rad + rad) * center_r * 2.75,
-                center.y + Math.cos(sum_rad + rad) * center_r * 2.75,
-                center_r * rad);
-            circle.setColor(0.25, 0, 0, 255);
-            circle.Info.name = this.search_results_names[i];
-            this.search_circles.push(circle);
-            sum_rad += 2 * rad;
-        }
         // 起動--wait-->描画とすると上手くいく
         setTimeout(() => {
-            // 描画
-            this.center_cricle.draw(ctx);
-            this.select_circles.forEach(element => {
-                element.draw(ctx);
-                ctx.fillText(element.Info.name, element.postion.x, element.postion.y);
-            });
-            this.search_circles.forEach(element => {
-                element.draw(ctx);
-                ctx.fillText(element.Info.name, element.postion.x, element.postion.y);
-            });
-        }, 10);
+            this.canvas = document.getElementById('canvas');
+            this.render_context = this.canvas.getContext('2d');
+            this.buffer_context = document.getElementById('canvas').getContext('2d');
+            // 初期化
+            this.DrawInitialize();
+           // 描画
+           this.DrawCanvas();
+        }, 20);
     },
     methods:{
+        DrawInitialize:function(){
+            const center = new Vector2(this.canvas_width * 0.5, this.canvas_height * 0.5)
+
+            this.center_cricle = new Circle(center.x, center.y, center.y * 0.5);
+            this.center_cricle.setColor(255, 230, 230, 230);
+            this.center_cricle.name = "";
+
+            var sum_volume = this.select_volumes
+                .reduce(function(sum, element){
+                    return sum + element;
+                }, 0);
+            var sum_rad = 0;
+            for(let i = 0; i < this.select_volumes.length; i++){
+                let rate = this.select_volumes[i] / sum_volume;
+                let rad = Math.PI * rate;
+                let circle = new Circle(
+                    center.x + Math.sin(sum_rad + rad) * this.center_cricle.r * 0.5,
+                    center.y + Math.cos(sum_rad + rad) * -this.center_cricle.r * 0.5,
+                    this.center_cricle.r * rate);
+                circle.setColor(255, 192, 255, 192);
+                circle.name = this.select_names[i];
+                this.select_circles.push(circle);
+                sum_rad += 2 * rad;
+            }
+
+            sum_volume = this.search_results_volumes
+                .reduce(function(sum, element){
+                    return sum + element;
+                }, 0);
+            sum_rad = 0;
+            for(let i = 0; i < this.search_results_volumes.length; i++){
+                let rate = this.search_results_volumes[i] / sum_volume;
+                let rad = Math.PI * rate;
+                let circle = new Circle(
+                    center.x + Math.sin(sum_rad + rad) * this.center_cricle.r * 1.6,
+                    center.y + Math.cos(sum_rad + rad) * this.center_cricle.r * 1.6,
+                    this.center_cricle.r * 0.5);
+                circle.setColor(255, 192, 192, 255);
+                circle.name = this.search_results_names[i];
+                this.search_circles.push(circle);
+                sum_rad += 2 * rad;
+            }
+        },
         canvesClickEvent:function(event){
             // マウスの座標をCanvas内の座標とあわせるため
             const rect = this.canvas.getBoundingClientRect();
@@ -141,19 +134,54 @@ export default {
                 event.clientX - rect.left,
                 event.clientY - rect.top
             );
+            let flag = false;
             this.select_circles.forEach(element => {
                 if(element.isHit(point.x, point.y)){
                     console.log("click!");
+                    flag = true;
+                    this.ClickEvent(element);
                 }
             });
             this.search_circles.forEach(element => {
                 if(element.isHit(point.x, point.y)){
                     console.log("click!");
+                    flag = true;
                 }
             });
+            if(flag == false){
+                this.DrawInitialize();
+                this.DrawCanvas();
+            }
         },
-        DrawInit:function(){
-
+        ClickEvent:function(circle){
+            this.center_cricle.name = circle.name;
+            this.center_cricle.color = circle.color;
+            this.select_circles.forEach(element => {
+                element.show = false;
+            });
+            this.DrawCanvas();
+        },
+        DrawCanvas:function(){
+            this.buffer_context.clearRect(0,0,this.canvas_width, this.canvas_width);
+            // 描画
+            if(this.center_cricle.show){
+                this.center_cricle.draw(this.buffer_context);
+                this.buffer_context.fillText(this.center_cricle.name,this.center_cricle.postion.x, this.center_cricle.postion.y);
+            }
+            this.select_circles.forEach(element => {
+                if(element.show){
+                    element.draw(this.buffer_context);
+                    this.buffer_context.fillText(element.name, element.postion.x, element.postion.y);
+                }
+            });
+            this.search_circles.forEach(element => {
+                if(element.show){
+                    element.draw(this.buffer_context);
+                    this.buffer_context.fillText(element.name, element.postion.x, element.postion.y);
+                }
+            });
+            let image = this.buffer_context.getImageData(0,0,this.canvas_width, this.canvas_width);
+            this.render_context.putImageData(image,  0, 0);
         }
     }
 }
