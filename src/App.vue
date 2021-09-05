@@ -51,9 +51,7 @@ export default {
             this.SearchedNames = ["フロントエンド開発","データサイエンス","Cloud","バックエンド開発"];
             this.SearchedVolumes = [7850000, 1150000, 1640000, 2670000];
         }
-        },
-
-
+    },
     mounted : function(){
         //getdata関数
         this.getdata();
