@@ -5,6 +5,7 @@
 <template>
   <div class="add">
       <li v-for ="item in SelectedNames" :key="item">{{ item }}</li>
+      <li v-for="kensuu in SearchedVolumes" :key="kensuu">{{ kensuu }}</li>
       <draw-page
         v-bind:select_names = SelectedNames
         v-bind:select_volumes = SelectedVolumes
@@ -17,7 +18,6 @@
 
 <script>
 import DrawPage from './components/DrawPage.vue';
-
 export default {
     name: 'App',
     components:{
@@ -36,7 +36,7 @@ export default {
             // jsonファイルはpublicの下
             const response =  await axios.get('./sample.json')
             const gengo_id = response.data.gengo_id
-            const gengo = ["C", "python", "Ruby"];
+            const gengo = ["C", "Python", "Ruby", "Javascript"];
             const gengo1 = gengo[gengo_id[0].id];
             const gengo2 = gengo[gengo_id[1].id];
             console.log(gengo1);
@@ -48,8 +48,8 @@ export default {
             for (let i = 0; i < this.SelectedNames.length; i++) {
                 this.SelectedVolumes.push(1);
             }
-            this.SearchedNames = ["A","B","C","D"];
-            this.SearchedVolumes = [25,25,25,25];
+            this.SearchedNames = ["フロントエンド開発","データサイエンス","Cloud","バックエンド開発"];
+            this.SearchedVolumes = [7850000, 1150000, 1640000, 2670000];
         }
         },
 
