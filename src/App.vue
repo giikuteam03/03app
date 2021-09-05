@@ -4,6 +4,9 @@
 
 <template>
   <div class="DrawPage">
+      <form action="./data.json">
+      
+      </form>
       <p>{{message}}</p>
       <li v-for="item in search_results_name" :key="item">{{ item }}</li>
       <canvas id="canvas" :height="canvas_height" :width="canvas_width" ></canvas>
