@@ -51,9 +51,7 @@ export default {
             this.SearchedNames = ["A","B","C","D"];
             this.SearchedVolumes = [25,25,25,25];
         }
-        },
-
-
+    },
     mounted : function(){
         //getdata関数
         this.getdata();
