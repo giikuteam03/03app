@@ -3,89 +3,61 @@
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 <template>
-  <div class="DrawPage">
-      <form action="./data.json">
-      
-      </form>
-      <p>{{message}}</p>
-      <li v-for="item in search_results_name" :key="item">{{ item }}</li>
-      <canvas id="canvas" :height="canvas_height" :width="canvas_width" ></canvas>
+  <div class="add">
+      <li v-for ="item in SelectedNames" :key="item">{{ item }}</li>
+      <draw-page
+        v-bind:select_names = SelectedNames
+        v-bind:select_volumes = SelectedVolumes
+        v-bind:search_results_names = SearchedNames
+        v-bind:search_results_volumes = SearchedVolumes
+      ></draw-page>
   </div>
 </template>
 
 
 <script>
-import DrawPageVue from './components/DrawPage.vue';
-class Vector2{
-    constructor(x = 0, y = 0){
-        this.x = x;
-        this.y = y;
-    }
-}
+import DrawPage from './components/DrawPage.vue';
 
 export default {
-    name: 'DrawPage',
+    name: 'App',
+    components:{
+        DrawPage
+    },
     data(){
         return{
-            message : 'Draw!!',
-            num : 1,
-            canvas_height:1024,
-            canvas_width:1024,
-            search_results_name:[], // 検索元の単語
-            search_results_volume:[20,20,20,20,20], // 検索結果の件数
-            circle:[],
+            SelectedNames:[],
+            SelectedVolumes:[],
+            SearchedNames:[],
+            SearchedVolumes:[],
         }
     },
-
     methods: {
-            getdata:  async function(){
-              // jsonファイルはpublicの下
-                const response =  await axios.get('./sample.json')
-                const gengo_id = response.data.gengo_id
-                const gengo = ["C", "python", "Ruby"];
-                const gengo1 = gengo[gengo_id[0].id];
-                const gengo2 = gengo[gengo_id[1].id];
-                console.log(gengo1);
-                this.search_results_name.push(...[gengo1, gengo2]);
+        getdata:  async function(){
+            // jsonファイルはpublicの下
+            const response =  await axios.get('./sample.json')
+            const gengo_id = response.data.gengo_id
+            const gengo = ["C", "python", "Ruby"];
+            const gengo1 = gengo[gengo_id[0].id];
+            const gengo2 = gengo[gengo_id[1].id];
+            console.log(gengo1);
+            gengo_id.forEach(e => {
+                this.SelectedNames.push(gengo[e.id]);
+            });
+            //this.search_results_name.push(...[gengo1, gengo2]);
+            // テスト用
+            for (let i = 0; i < this.SelectedNames.length; i++) {
+                this.SelectedVolumes.push(1);
             }
+            this.SearchedNames = ["A","B","C","D"];
+            this.SearchedVolumes = [25,25,25,25];
+        }
         },
 
 
     mounted : function(){
-        // 起動--wait-->描画とすると上手くいく
-        setTimeout(() => {
-            var center = new Vector2(this.canvas_width * 0.5, this.canvas_height * 0.5)
-            var center_r = center.x * 0.25;
-            var sum_volume = this.search_results_volume
-                .reduce(function(sum, element){
-                    return sum + element;
-                }, 0);
-
-            var canvas = document.getElementById('canvas');
-            var c = canvas.getContext('2d');
-
-            var sum_rad = 0;
-            //getdata関数
-            this.getdata();
-            console.log(this.search_results_name);
-            
-            for(let i = 0; i < this.search_results_volume.length; i++){
-                var rate = this.search_results_volume[i] / sum_volume;
-                var rad = Math.PI * rate;
-
-                c.fillStyle = "rgba(" + [0, 255, 0, 0.25] + ")";
-                // パスの開始
-                c.beginPath();
-                c.arc(
-                    center.x + Math.sin(sum_rad + rad) * center_r,
-                    center.y + Math.cos(sum_rad + rad) * center_r,
-                    center_r * rad, 0, 2 * Math.PI, false);
-                // 描画
-                c.fill();
-
-                sum_rad += 2 * rad;
-            }
-        }, 10);
+        //getdata関数
+        this.getdata();
+        console.log(this.SelectedNames);
     },
 }
 

@@ -16,14 +16,20 @@ class Vector2{
 
 export default {
     name: 'DrawPage',
+    props:{
+        select_names : Array,
+        select_volumes :Array,
+        search_results_names : Array,
+        search_results_volumes : Array,
+    },
     data(){
         return{
             message : 'Draw!!',
             num : 1,
             canvas_height:1024,
             canvas_width:1024,
-            search_results_name:["A","B","C","D","E"], // 検索元の単語
-            search_results_volume:[20,20,20,20,20], // 検索結果の件数
+            //search_results_name:["A","B","C","D","E"], // 検索元の単語
+            //search_results_volume:[20,20,20,20,20], // 検索結果の件数
             circle:[],
         }
     },
@@ -32,7 +38,7 @@ export default {
         setTimeout(() => {
             var center = new Vector2(this.canvas_width * 0.5, this.canvas_height * 0.5)
             var center_r = center.x * 0.25;
-            var sum_volume = this.search_results_volume
+            var sum_volume = this.select_volumes
                 .reduce(function(sum, element){
                     return sum + element;
                 }, 0);
@@ -41,8 +47,8 @@ export default {
             var c = canvas.getContext('2d');
 
             var sum_rad = 0;
-            for(let i = 0; i < this.search_results_volume.length; i++){
-                var rate = this.search_results_volume[i] / sum_volume;
+            for(let i = 0; i < this.select_volumes.length; i++){
+                var rate = this.select_volumes[i] / sum_volume;
                 var rad = Math.PI * rate;
 
                 c.fillStyle = "rgba(" + [0, 255, 0, 0.25] + ")";
